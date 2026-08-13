@@ -102,11 +102,15 @@ async function loadRoster() {
   }
   rosterMeta.textContent = "正在清点臣民……";
   try {
-    let r = await fetch(ISSUES_API, { headers: ghHeaders() });
+    // GitHub 列表接口响应带 max-age=60，浏览器会缓存旧名单；
+    // 用 no-store + 时间戳强制每次拿最新数据
+    const url = `${ISSUES_API}&t=${Date.now()}`;
+    let r = await fetch(url, { headers: ghHeaders(), cache: "no-store" });
     // token 失效/被吊销时，退回无鉴权读取（公开仓库仍可读）
     if ((r.status === 401 || r.status === 403) && TOKEN) {
-      r = await fetch(ISSUES_API, {
-        headers: { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }
+      r = await fetch(url, {
+        headers: { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
+        cache: "no-store"
       });
     }
     if (!r.ok) throw new Error("HTTP " + r.status);
