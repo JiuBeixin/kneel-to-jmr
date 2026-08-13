@@ -33,7 +33,7 @@
 ## ❓ 常见问题
 
 **需要 GitHub 账号吗？**
-一般不需要，一键直达，圣旨自动送达。若圣旨通道繁忙（token 失效），会改走 GitHub 预填页面，此时需要登录 GitHub 点一下 `Submit`。
+一般不需要，一键直达，圣旨自动送达。若圣旨通道繁忙，会改走 GitHub 预填页面，此时需要登录 GitHub 点一下 `Submit`。
 
 **称臣后名册没刷新？**
 点「🔄 刷新名册」；若仍无变化，按一次 `Ctrl+F5` 硬刷新即可。
@@ -57,7 +57,7 @@
 - **换御像**：替换根目录 `jmr.jpg`
 - **改文案/配色**：`index.html` / `style.css`
 - **改仓库/用户**：`config.js` 里的 `OWNER` / `REPO`
-- **Token**：分段存于 `config.js` 的 `TOKEN_PARTS`（仅本仓库 Issues 权限）。注意：公开仓库中的 token 可能被 GitHub 自动吊销，失效后页面自动回退到「预填 Issue」方案；重新生成后替换分段即可
+- **圣旨通道**：配置见 `config.js`。通道失效时页面会自动回退到「预填 Issue」两步方案，不影响称臣；重新配置后即可恢复一键
 - **发布**：`Settings → Pages → Deploy from a branch → master / (root)`
 
 </details>
