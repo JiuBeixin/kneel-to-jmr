@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JMR 帝国 · 一键称臣</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <main class="container">
+    <header class="hero">
+      <div class="portrait-frame">
+        <img src="jmr.jpg" alt="JMR 陛下御像" onerror="this.parentElement.style.display='none'" />
+      </div>
+      <div class="crown">👑</div>
+      <h1>JMR 帝国</h1>
+      <p class="subtitle">—— 一键称臣系统 · 圣旨即达 ——</p>
+    </header>
+
+    <section class="card kneel-card">
+      <form id="kneel-form">
+        <label class="field">
+          <span>你的尊号 / 姓名</span>
+          <input id="name" name="name" type="text" maxlength="50" placeholder="例：张三·御前行走" required />
+        </label>
+        <label class="field">
+          <span>效忠宣言 <small>(可选)</small></span>
+          <textarea id="message" name="message" maxlength="200" rows="3" placeholder="愿为 JMR 帝国赴汤蹈火，肝脑涂地……"></textarea>
+        </label>
+        <button type="submit" id="submit-btn" class="kneel-btn">⚔️ 一键称臣</button>
+        <p class="hint">点击后将跳转到 GitHub，用你的账号点一下 Submit 即可完成称臣（需登录 GitHub）。</p>
+      </form>
+      <div id="result" class="result" hidden></div>
+    </section>
+
+    <section class="card roster-card">
+      <div class="roster-head">
+        <h2>📜 帝国臣民名册</h2>
+        <button type="button" id="refresh-btn" class="refresh-btn">🔄 刷新名册</button>
+      </div>
+      <p id="roster-meta" class="roster-meta">正在清点臣民……</p>
+      <ol id="roster" class="roster"></ol>
+      <p class="roster-note">名册数据来自 GitHub Issues，纯静态托管于 GitHub Pages。</p>
+    </section>
+
+    <footer class="footer">
+      恶搞项目 · 请勿当真 · <a id="repo-link" href="#" target="_blank" rel="noopener">查看 Issue 名册</a>
+    </footer>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
