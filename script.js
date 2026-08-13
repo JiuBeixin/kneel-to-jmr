@@ -175,13 +175,20 @@ function renderRoster(items) {
   });
 }
 
+// 称臣后按多个时间点补刷新，确保名册立即跟上（兜底网络抖动与两步流程）
+function refreshBurst(delays) {
+  delays.forEach((d) => setTimeout(loadRoster, d));
+}
+
 function showPrefillFallback(issueTitle, body, rank, title, note) {
   window.open(prefillUrl(issueTitle, body), "_blank", "noopener,noreferrer");
   showResult(`<p class="result-title">📜 圣旨已拟好！</p>
     <p class="error">${escapeHtml(note)}</p>
     <p>已改为在新标签页打开 GitHub，请点击 <strong>Submit new issue</strong> 完成称臣。</p>
     <p>预计成为帝国第 <strong>${rank}</strong> 位臣民，封号 <strong>${title}</strong>。</p>
-    <p>提交完成后，点下方「🔄 刷新名册」查看自己上榜。</p>`);
+    <p>提交完成后回到本页，名册会自动刷新。</p>`);
+  // 两步流程：拉长观察窗口，等你在 GitHub 上点完 Submit
+  refreshBurst([3000, 8000, 15000, 30000, 60000]);
 }
 
 form.addEventListener("submit", async (e) => {
@@ -229,7 +236,8 @@ form.addEventListener("submit", async (e) => {
         resultEl.hidden = false;
         nameInput.value = "";
         messageInput.value = "";
-        loadRoster();
+        // 稍等片刻再刷（等 issue 真正落库），再补两轮兜底
+        refreshBurst([800, 3000, 8000]);
       } else {
         showPrefillFallback(issueTitle, body, rank, title, `直接上表失败（HTTP ${r.status}，token 可能已失效）`);
       }
