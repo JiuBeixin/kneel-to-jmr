@@ -18,7 +18,8 @@ const repoLink = $("#repo-link");
 const submitBtn = $("#submit-btn");
 const refreshBtn = $("#refresh-btn");
 
-const ISSUES_API = `${GITHUB_API}/repos/${OWNER}/${REPO}/issues?state=all&per_page=100&sort=created&direction=asc`;
+// state=open：只显示未完成的臣民；在 GitHub 上被「mark as completed」的 Issue 会自动从名册隐藏
+const ISSUES_API = `${GITHUB_API}/repos/${OWNER}/${REPO}/issues?state=open&per_page=100&sort=created&direction=asc`;
 const ISSUES_URL = `${GITHUB_API}/repos/${OWNER}/${REPO}/issues`;
 const NEW_ISSUE_BASE = `https://github.com/${OWNER}/${REPO}/issues/new`;
 
