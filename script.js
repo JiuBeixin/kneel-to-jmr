@@ -1,6 +1,10 @@
 const cfg = window.JMR_CONFIG || {};
 const OWNER = cfg.OWNER || "";
 const REPO = cfg.REPO || "";
+// 运行时把分段 token 拼装回来
+const TOKEN = (cfg.TOKEN_PARTS || []).join("");
+
+const GITHUB_API = "https://api.github.com";
 
 const $ = (s) => document.querySelector(s);
 
@@ -14,7 +18,8 @@ const repoLink = $("#repo-link");
 const submitBtn = $("#submit-btn");
 const refreshBtn = $("#refresh-btn");
 
-const ISSUES_API = `https://api.github.com/repos/${OWNER}/${REPO}/issues?state=all&per_page=100&sort=created&direction=asc`;
+const ISSUES_API = `${GITHUB_API}/repos/${OWNER}/${REPO}/issues?state=all&per_page=100&sort=created&direction=asc`;
+const ISSUES_URL = `${GITHUB_API}/repos/${OWNER}/${REPO}/issues`;
 const NEW_ISSUE_BASE = `https://github.com/${OWNER}/${REPO}/issues/new`;
 
 const TITLES = [
@@ -33,6 +38,15 @@ const TITLES = [
 ];
 
 if (OWNER && REPO) repoLink.href = `https://github.com/${OWNER}/${REPO}/issues`;
+
+function ghHeaders() {
+  const h = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28"
+  };
+  if (TOKEN) h.Authorization = `Bearer ${TOKEN}`;
+  return h;
+}
 
 function pickTitle() {
   return TITLES[Math.floor(Math.random() * TITLES.length)];
@@ -56,6 +70,24 @@ function escapeHtml(s) {
   ));
 }
 
+function buildBody(name, message, title) {
+  return [
+    `> ⚔️ 朕已阅。准卿所奏，封卿为 **${title}**。`,
+    "",
+    "| 项目 | 内容 |",
+    "| --- | --- |",
+    `| 臣名 | ${name} |`,
+    `| 效忠宣言 | ${message || "（无）"} |`,
+    `| 称臣时间 | ${new Date().toISOString()} |`,
+    "",
+    `<!-- kneel-json: ${JSON.stringify({ name, message, title })} -->`
+  ].join("\n");
+}
+
+function prefillUrl(issueTitle, body) {
+  return `${NEW_ISSUE_BASE}?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(body)}&labels=${encodeURIComponent("称臣")}`;
+}
+
 let rosterCache = [];
 
 function showResult(html) {
@@ -70,7 +102,13 @@ async function loadRoster() {
   }
   rosterMeta.textContent = "正在清点臣民……";
   try {
-    const r = await fetch(ISSUES_API);
+    let r = await fetch(ISSUES_API, { headers: ghHeaders() });
+    // token 失效/被吊销时，退回无鉴权读取（公开仓库仍可读）
+    if ((r.status === 401 || r.status === 403) && TOKEN) {
+      r = await fetch(ISSUES_API, {
+        headers: { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }
+      });
+    }
     if (!r.ok) throw new Error("HTTP " + r.status);
     const issues = await r.json();
     const items = (issues || [])
@@ -133,50 +171,73 @@ function renderRoster(items) {
   });
 }
 
-form.addEventListener("submit", (e) => {
+function showPrefillFallback(issueTitle, body, rank, title, note) {
+  window.open(prefillUrl(issueTitle, body), "_blank", "noopener,noreferrer");
+  showResult(`<p class="result-title">📜 圣旨已拟好！</p>
+    <p class="error">${escapeHtml(note)}</p>
+    <p>已改为在新标签页打开 GitHub，请点击 <strong>Submit new issue</strong> 完成称臣。</p>
+    <p>预计成为帝国第 <strong>${rank}</strong> 位臣民，封号 <strong>${title}</strong>。</p>
+    <p>提交完成后，点下方「🔄 刷新名册」查看自己上榜。</p>`);
+}
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = nameInput.value.trim();
   const message = messageInput.value.trim();
   if (!name) return;
-
   if (!OWNER || !REPO) {
     showResult('<p class="error">请先在 config.js 里填写 OWNER 和 REPO</p>');
     return;
   }
 
+  submitBtn.disabled = true;
+  submitBtn.textContent = "⏳ 上表称臣中……";
+  resultEl.hidden = true;
+
   const dup = rosterCache.some((it) => it.name.toLowerCase() === name.toLowerCase());
   const rank = rosterCache.length + 1;
   const title = pickTitle();
-  const now = new Date().toISOString();
-
-  const body = [
-    `> ⚔️ 朕已阅。准卿所奏，封卿为 **${title}**。`,
-    "",
-    "| 项目 | 内容 |",
-    "| --- | --- |",
-    `| 臣名 | ${name} |`,
-    `| 效忠宣言 | ${message || "（无）"} |`,
-    `| 称臣时间 | ${now} |`,
-    "",
-    `<!-- kneel-json: ${JSON.stringify({ name, message, title })} -->`
-  ].join("\n");
-
+  const body = buildBody(name, message, title);
   const issueTitle = `⚔️【称臣】${name} 俯首称臣`;
-  const url = `${NEW_ISSUE_BASE}?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(body)}&labels=${encodeURIComponent("称臣")}`;
-
-  window.open(url, "_blank", "noopener,noreferrer");
-
   const dupNote = dup
     ? `<p class="error">⚠️ 此尊号似乎已称臣，执意再表一份也行（会被 JMR 发现）。</p>`
     : "";
-  showResult(`<p class="result-title">📜 圣旨已拟好！</p>
-    <p>已在新标签页打开 GitHub，请点击 <strong>Submit new issue</strong> 完成称臣。</p>
-    <p>预计成为帝国第 <strong>${rank}</strong> 位臣民，封号 <strong>${title}</strong>。</p>
-    ${dupNote}
-    <p>提交完成后，点下方「🔄 刷新名册」查看自己上榜。</p>`);
 
-  nameInput.value = "";
-  messageInput.value = "";
+  try {
+    if (TOKEN) {
+      const r = await fetch(ISSUES_URL, {
+        method: "POST",
+        headers: { ...ghHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ title: issueTitle, body })
+      });
+      if (r.ok) {
+        const issue = await r.json();
+        showResult(`<p class="result-title">🎉 圣旨到！</p>
+          <p>朕已阅，准 <strong class="result-name"></strong> 俯首称臣。</p>
+          <p>封号：<strong class="result-title2"></strong></p>
+          <p>你是帝国第 <strong class="result-rank"></strong> 位臣民。</p>
+          ${dupNote}
+          <a class="issue-link" href="#" target="_blank" rel="noopener">查看你的圣旨 Issue ↗</a>`);
+        resultEl.querySelector(".result-name").textContent = name;
+        resultEl.querySelector(".result-title2").textContent = title;
+        resultEl.querySelector(".result-rank").textContent = rank;
+        resultEl.querySelector(".issue-link").href = issue.html_url;
+        resultEl.hidden = false;
+        nameInput.value = "";
+        messageInput.value = "";
+        loadRoster();
+      } else {
+        showPrefillFallback(issueTitle, body, rank, title, `直接上表失败（HTTP ${r.status}，token 可能已失效）`);
+      }
+    } else {
+      showPrefillFallback(issueTitle, body, rank, title, "未配置 token");
+    }
+  } catch (err) {
+    showPrefillFallback(issueTitle, body, rank, title, `直接上表失败（${err && err.message}）`);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "⚔️ 一键称臣";
+  }
 });
 
 refreshBtn.addEventListener("click", loadRoster);
