@@ -246,4 +246,12 @@ form.addEventListener("submit", async (e) => {
 
 refreshBtn.addEventListener("click", loadRoster);
 
+// 每 60 秒自动刷新名册
+setInterval(loadRoster, 60 * 1000);
+
+// 页面重新可见时也刷新（覆盖「预填 Issue 提交后切回本页」的场景）
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) loadRoster();
+});
+
 loadRoster();
