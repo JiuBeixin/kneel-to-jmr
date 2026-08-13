@@ -1,56 +1,63 @@
 # ⚔️ JMR 帝国 · 一键称臣
 
-恶搞项目：**向「JMR 帝国」俯首称臣**。每位称臣者都是一条 GitHub Issue —— 数据库就是 Issues，名册直接读 Issue。纯静态托管在 GitHub Pages，无后端。
+👑 **[立即称臣 →](https://jiubeixin.github.io/kneel-to-jmr/)**
 
-## 工作原理
+> **奉天承运，JMR 诏曰**：凡入此门者，轻点按钮，俯首称臣，即可载入帝国史册，与帝国同辉。
 
-| 环节 | 怎么实现 |
-| --- | --- |
-| 「称臣」提交 | 浏览器直连 GitHub API，用 `config.js` 里的 Token 直接创建 Issue（真·一键） |
-| 自动回退 | Token 失效/被吊销时，自动改走「预填 Issue 页面」两步方案 |
-| 数据库 | GitHub Issues —— 每条「称臣」= 一条标题带 `⚔️【称臣】` 前缀的 Issue |
-| 名册展示 | 浏览器调用 GitHub REST API 读取 Issues，按标题前缀过滤 |
+本项目是为 **JMR 大佬**（AI Agent 学习群的精神领袖、永远的技术引路人）量身打造的恶搞圣地。在这里，一键向 JMR 帝国称臣，你的尊号将被刻入 **GitHub Issues** —— 帝国的官方史册，公开、透明、永载青史。
 
-## ⚠️ 安全须知（务必读）
+## 📜 称臣三步走（三步归顺之路）
 
-Token 被**分段存进前端代码，运行时拼接**——但这**不是加密**：
+1. 打开 **[帝国入口](https://jiubeixin.github.io/kneel-to-jmr/)**
+2. 填上你的 **尊号 / 姓名**，再写一句 **效忠宣言**（可选，但强烈建议——写得好的宣言最能讨陛下欢心）
+3. 点击 **⚔️ 一键称臣**，圣旨即达
 
-- 任何人打开网页按 `F12` 就能看到全部分段并拼回 token；
-- **GitHub 的 secret scanning 会自动吊销出现在公开仓库里的 token**，所以这个方案随时可能失效；
-- 好在当前 token 只限权了 `kneel-to-jmr` 这个仓库的 Issues 读写，风险可控；
-- **token 一旦泄露/被吊销，请到 GitHub 里 revoke 并重新生成**，再改 `config.js` 的 `TOKEN_PARTS`。
+## 🎖️ 帝国礼遇
 
-失效后页面不会坏：会自动回退到「预填 Issue」两步方案（访客用自己账号点一下 Submit）。
+每位臣民将获得：
 
-## 部署步骤
+- **随机封号**：御前带刀侍卫、九品芝麻官、镇国大将军、御猫饲养员…… 天意随机，不可自选
+- **圣旨编号**：以 GitHub Issue 编号为凭，全帝国唯一
+- **专属圣旨**：你的称臣记录是一条真实的 GitHub Issue，点击名册中的名字即可瞻仰
 
-### 1. 改配置
-编辑 `config.js`：
+## 📜 帝国臣民名册
 
-```js
-window.JMR_CONFIG = {
-  OWNER: "JiuBeixin",     // 你的 GitHub 用户名
-  REPO: "kneel-to-jmr",   // 仓库名
-  TOKEN_PARTS: [ /* 你的 token 分段 */ ]
-};
-```
+名册实时展示所有已归顺的义士，数据直读 [GitHub Issues](https://github.com/JiuBeixin/kneel-to-jmr/issues)——**每位臣民都是一条 Issue**。这也正是本项目最大的技术浪漫：*数据库，就是 Issues 本身*。
 
-### 2. 开启 GitHub Pages
-仓库 → **Settings → Pages** → Source 选 `Deploy from a branch` → 分支 `master`（或你的默认分支）、目录 `/ (root)`。
+## ⚖️ 帝国律法
 
-保存后等 1~2 分钟，访问 `https://<用户名>.github.io/kneel-to-jmr/`。
+- 同一尊号原则上只称臣一次；重复上表会被标记，执意再表一份也行，但会被陛下发现
+- 效忠宣言请文明用语，对陛下不敬者，贬为庶民，逐出宫门
+- 封号乃天意，不得挑三拣四，钦此
 
-### 3. 完成 🎉
-填个尊号点 **⚔️ 一键称臣**，圣旨（Issue）即时生成，名册实时刷新。
+## ❓ 常见问题
 
-## 自定义
+**需要 GitHub 账号吗？**
+一般不需要，一键直达，圣旨自动送达。若圣旨通道繁忙（token 失效），会改走 GitHub 预填页面，此时需要登录 GitHub 点一下 `Submit`。
 
-- **封号列表**：改 `script.js` 里的 `TITLES`
-- **Issue 标题 / 正文模板**：改 `script.js` 里的 `buildBody` 和 `issueTitle`
-- **文案、配色、御像**：改 `index.html` / `style.css`（御像就是根目录的 `jmr.jpg`，可换图）
+**称臣后名册没刷新？**
+点「🔄 刷新名册」；若仍无变化，按一次 `Ctrl+F5` 硬刷新即可。
 
-## 限制 & 免责声明
+**封号不满意怎么办？**
+钦此，没有商量的余地。可以换个尊号再表一次（不建议，会被发现）。
 
-- 名册最多显示前 100 位；无 token 时读取走 GitHub 未认证限流。
-- 同一尊号只能靠前端查重（软提示），可被绕过——恶搞项目，开心就好。
-- 纯恶搞，别当真；被 JMR 大佬本人发现后请自行谢罪 🙇。
+**为什么我的名字能点？**
+点开就是你那条圣旨 Issue，可截图发群炫耀。
+
+## 🙇 免责声明
+
+本项目纯属群友恶搞，用于活跃气氛，顺带学习 GitHub Issues 与静态站点的玩法。对 JMR 大佬本人如有冒犯，全体臣民愿负荆请罪、以儆效尤。
+
+---
+
+<details>
+<summary>🔧 帝国管理员维护手册（点开）</summary>
+
+- **改封号**：`script.js` 里的 `TITLES`
+- **换御像**：替换根目录 `jmr.jpg`
+- **改文案/配色**：`index.html` / `style.css`
+- **改仓库/用户**：`config.js` 里的 `OWNER` / `REPO`
+- **Token**：分段存于 `config.js` 的 `TOKEN_PARTS`（仅本仓库 Issues 权限）。注意：公开仓库中的 token 可能被 GitHub 自动吊销，失效后页面自动回退到「预填 Issue」方案；重新生成后替换分段即可
+- **发布**：`Settings → Pages → Deploy from a branch → master / (root)`
+
+</details>
